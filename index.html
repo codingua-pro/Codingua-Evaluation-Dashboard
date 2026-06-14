@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم أكاديمية كودينجوا | Codingua Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body class="light-theme">
+
+    <div id="auth-container" class="auth-wrapper hidden">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">Codingua <span>لغة الأكواد</span></div>
+                <h2>تسجيل الدخول للمنظومة</h2>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">البريد الإلكتروني</label>
+                    <input type="email" id="login-email" required placeholder="admin@codingua.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">كلمة المرور</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">دخول الآمن <i class="fas fa-sign-in-alt"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="app-grid hidden">
+        
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-title">Codingua</div>
+                <div class="brand-subtitle">لغة الأكواد</div>
+            </div>
+            <div class="user-profile-badge">
+                <div class="avatar"><i class="fas fa-user-circle"></i></div>
+                <div class="user-info">
+                    <h4 id="user-display-name">جاري التحميل...</h4>
+                    <span id="user-display-role" class="badge">---</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="panel-overview"><i class="fas fa-chart-pie"></i> نظرة عامة</a>
+                <a href="#" class="nav-item admin-only" data-target="panel-instructors"><i class="fas fa-chalkboard-teacher"></i> المعلمون</a>
+                <a href="#" class="nav-item" data-target="panel-groups"><i class="fas fa-users"></i> المجموعات</a>
+                <a href="#" class="nav-item" data-target="panel-students"><i class="fas fa-graduation-cap"></i> الطلاب</a>
+                <a href="#" class="nav-item" data-target="panel-evaluations"><i class="fas fa-star"></i> التقييمات والحصص</a>
+                <a href="#" class="nav-item" data-target="panel-reports"><i class="fas fa-file-invoice"></i> التقارير والشهادات</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="btn btn-icon-text"><i class="fas fa-moon"></i> <span>الوضع الليلي</span></button>
+                <button id="logout-button" class="btn btn-danger-link"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <header class="top-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="global-search" placeholder="بحث سريع عن طالب، مجموعة، أو معلم...">
+                </div>
+                <div class="filter-group">
+                    <select id="global-filter-month">
+                        <option value="">كل الأشهر</option>
+                        <option value="2026-06">يونيو 2026</option>
+                        <option value="2026-07">يوليو 2026</option>
+                    </select>
+                </div>
+            </header>
+
+            <section id="panel-overview" class="dashboard-panel active-panel">
+                <div class="metrics-grid" id="metrics-container">
+                    </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-bar"></i> ترتيب وعموم نقاط الطلاب</h3>
+                        <canvas id="chart-rankings"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fas fa-chart-line"></i> الإحصائيات العامة (حضور واجبات)</h3>
+                        <canvas id="chart-progress"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-instructors" class="dashboard-panel admin-only">
+                <div class="panel-header">
+                    <h2>إدارة المعلمين والمحاضرين</h2>
+                    <button class="btn btn-primary" onclick="window.app.openModal('instructor')"><i class="fas fa-plus"></i> إضافة معلم جديد</button>
+                </div>
+                <div class="table-container">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th>الاسم الكامل</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>المجموعات المسندة</th>
+                                <th>العمليات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-instructors-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="panel-groups" class="dashboard-panel">
+                <div class="panel-header">
+                    <h2>إدارة المجموعات الدراسية</h2>
+                    <button class="btn btn-primary admin-only" onclick="window.app.openModal('group')"><i class="fas fa-plus"></i> إضافة مجموعة جديدة</button>
+                </div>
+                <div class="table-container">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th>اسم المجموعة</th>
+                                <th>المسار الدراسي / الكورس</th>
+                                <th>المعلم المسؤول</th>
+                                <th>عدد الطلاب</th>
+                                <th>العمليات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-groups-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="panel-students" class="dashboard-panel">
+                <div class="panel-header">
+                    <h2>قاعدة بيانات الطلاب</h2>
+                    <button class="btn btn-primary" id="add-student-btn" onclick="window.app.openModal('student')"><i class="fas fa-plus"></i> تسجيل طالب جديد</button>
+                </div>
+                <div class="table-container">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th>اسم الطالب</th>
+                                <th>العمر</th>
+                                <th>رقم هاتف الولي</th>
+                                <th>المجموعة الحالية</th>
+                                <th>تاريخ الالتحاق</th>
+                                <th>العمليات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-students-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="panel-evaluations" class="dashboard-panel">
+                <div class="panel-header">
+                    <h2>إدارة الحصص ورصد درجات التقييم اليومية</h2>
+                    <div class="action-row">
+                        <button class="btn btn-primary" onclick="window.app.openModal('session')"><i class="fas fa-calendar-plus"></i> إنشاء حصة جديدة</button>
+                    </div>
+                </div>
+                
+                <div class="evaluation-workspace">
+                    <div class="filter-bar-dark">
+                        <div class="inline-field">
+                            <label>اختر المجموعة:</label>
+                            <select id="eval-group-selector"></select>
+                        </div>
+                        <div class="inline-field">
+                            <label>اختر رقم الحصة:</label>
+                            <select id="eval-session-selector"><option value="">-- اختر مجموعة أولاً --</option></select>
+                        </div>
+                    </div>
+
+                    <div id="evaluation-matrix-wrapper" class="hidden">
+                        <form id="evaluation-matrix-form">
+                            <div class="table-container">
+                                <table class="responsive-table data-matrix">
+                                    <thead>
+                                        <tr>
+                                            <th>الطالب</th>
+                                            <th>حضور (+10)</th>
+                                            <th>مشاركة (+5)</th>
+                                            <th>تطبيق عملي (+15)</th>
+                                            <th>واجب وفيديو (+20)</th>
+                                            <th>فكرة إبداعية (+10)</th>
+                                            <th>تأخير 10د (-5)</th>
+                                            <th>عدم تسليم واجب (-10)</th>
+                                            <th>المجموع التلقائي</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="matrix-students-body"></tbody>
+                                </table>
+                            </div>
+                            <div class="form-actions-footer">
+                                <button type="submit" class="btn btn-success btn-large"><i class="fas fa-save"></i> حفظ واعتماد درجات الحصة بالكامل</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-reports" class="dashboard-panel">
+                <div class="panel-header">
+                    <h2>محرك التقارير الدورية ولوحة الشرف (كل 4 حصص)</h2>
+                    <div class="action-row">
+                        <button class="btn btn-excel" id="export-excel-btn"><i class="fas fa-file-excel"></i> تصدير البيانات لملف Excel</button>
+                        <button class="btn btn-pdf" id="export-pdf-btn"><i class="fas fa-file-pdf"></i> طباعة كشوفات التقييم والشواهد PDF</button>
+                    </div>
+                </div>
+                <div id="report-render-zone" class="report-print-target">
+                    </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="global-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-system-title">إضافة بيانات للمنظومة</h3>
+                <button class="close-modal" onclick="window.app.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-system-body">
+                </div>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="toast hidden"></div>
+</body>
+</html>
