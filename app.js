@@ -34,10 +34,13 @@ class CodinguaApp {
         this.listenAuthChanges();
     }
 
-    initDOMEvents() {
+initDOMEvents() {
         // Form Invocations
-        document.getElementById('login-form').addEventListener('submit', (e) => this.handleAuthentication(e));
-        document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) loginForm.addEventListener('submit', (e) => this.handleAuthentication(e));
+        
+        const logoutBtn = document.getElementById('logout-button');
+        if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
         
         // Navigation Interceptor
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -50,14 +53,24 @@ class CodinguaApp {
         });
 
         // Application Live System Listeners
-        document.getElementById('theme-toggle').addEventListener('click', () => this.toggleThemeContext());
-        document.getElementById('eval-group-selector').addEventListener('change', (e) => this.populateSessionSelectors(e.target.value));
-        document.getElementById('eval-session-selector').addEventListener('change', (e) => this.loadEvaluationMatrix(e.target.value));
-        document.getElementById('evaluation-matrix-form').addEventListener('submit', (e) => this.saveEvaluationMatrixData(e));
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) themeToggle.addEventListener('click', () => this.toggleThemeContext());
         
-        // Export Action Bindings
-        document.getElementById('export-excel-btn').addEventListener('click', () => this.exportCurrentDataToExcel());
-        document.getElementById('export-pdf-btn').addEventListener('click', () => this.exportCurrentDataToPDF());
+        const groupSelector = document.getElementById('eval-group-selector');
+        if (groupSelector) groupSelector.addEventListener('change', (e) => this.populateSessionSelectors(e.target.value));
+        
+        const sessionSelector = document.getElementById('eval-session-selector');
+        if (sessionSelector) sessionSelector.addEventListener('change', (e) => this.loadEvaluationMatrix(e.target.value));
+        
+        const matrixForm = document.getElementById('evaluation-matrix-form');
+        if (matrixForm) matrixForm.addEventListener('submit', (e) => this.saveEvaluationMatrixData(e));
+        
+        // Export Action Bindings (آمنة تماماً الآن حتى لو لم تكن الأزرار موجودة)
+        const excelBtn = document.getElementById('export-excel-btn');
+        if (excelBtn) excelBtn.addEventListener('click', () => this.exportCurrentDataToExcel());
+        
+        const pdfBtn = document.getElementById('export-pdf-btn');
+        if (pdfBtn) pdfBtn.addEventListener('click', () => this.exportCurrentDataToPDF());
     }
 
     showToast(message) {
